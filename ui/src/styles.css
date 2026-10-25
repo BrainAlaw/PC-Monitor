@@ -1024,10 +1024,12 @@ html.embedded, html.embedded body { min-width: 0; width: 100%; overflow-x: hidde
 html.embedded .topbar { padding: 6px 8px; }
 html.embedded .window-controls { display: none !important; }
 html.embedded .content { width: 100%; padding: 8px; }
-html.embedded .content { grid-template-columns: minmax(0, 1fr); }
-html.embedded .content > .layout { display: grid; }
-html.embedded .layout { grid-template-columns: minmax(0, 1fr); }
-html.embedded .layout > .panel, html.embedded .compute > .panel, html.embedded .span-4, html.embedded .span-8 { grid-column: 1 / -1; }
+@media (max-width: 1799px) {
+  html.embedded .content { grid-template-columns: minmax(0, 1fr); }
+  html.embedded .content > .layout { display: grid; }
+  html.embedded .layout { grid-template-columns: minmax(0, 1fr); }
+  html.embedded .layout > .panel, html.embedded .compute > .panel, html.embedded .span-4, html.embedded .span-8 { grid-column: 1 / -1; }
+}
 html.embedded .settings-popover { right: 8px; width: min(380px, calc(100vw - 16px)); }
 
 

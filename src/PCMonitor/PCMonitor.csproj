@@ -9,7 +9,7 @@
     <RootNamespace>PCMonitor</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Version>2.0.5</Version>
+    <Version>2.0.6</Version>
     <Product>PC Monitor</Product>
     <Company>PC Monitor</Company>
     <Description>Standalone hardware monitoring dashboard</Description>
