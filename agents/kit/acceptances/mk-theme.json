@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "mission": "mk-theme",
+  "tasks": {
+    "mk-dashboard-theme": {
+      "decision": "REVIEWED",
+      "reason": "Review APPROVE-WITH-NOTES: 106 vitest, 79 dotnet, measure at 1920/2560/1366/1024/390 px green; native DashboardForm background still pending",
+      "reviewedBy": "coordinator",
+      "date": "2026-10-25",
+      "evidence": [
+        "agents/reviews/mk-theme.md"
+      ],
+      "manualChecks": [
+        "Native window looks right on the PC"
+      ]
+    }
+  }
+}
