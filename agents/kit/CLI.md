@@ -79,6 +79,18 @@ Quota failures disable the shared pool. Suitable free tools inherit the same bra
 
 Freebuff has no automated launcher. When no suitable tools remain, the report exposes capacity failure; manually paste the current task in that worktree and record it with `manual-run.sh`. Stop/pause automated execution before a manual takeover. Existing numeric-round manual records remain visible in the combined watcher.
 
+## Manual decisions and the tracker
+
+The runner's `status` is never edited by hand. Manual review or sign-off is recorded in a committed file per mission, `agents/kit/acceptances/<mission>.json`, and `status`, `watch` and MK Watch show an `effectiveStatus` next to the runner's `status`:
+
+| Decision | Command | Meaning |
+|---|---|---|
+| `REVIEWED` | `runner.mjs accept <mission> <task> --decision REVIEWED --reason "..." --evidence "<path>" --manual "<device check>"` | Code and automated checks were reviewed; manual checks are still pending. Shown as REVIEWED. |
+| `ACCEPTED` | same command with `--decision ACCEPTED` | The user signed off after manual checks. Record it only on the user's explicit word. |
+| `SUPERSEDED` | `runner.mjs supersede <mission> --reason "..." [--by] [--date]` (whole mission) or `accept ... --decision SUPERSEDED` (one task) | Replaced by other work; no longer pending. |
+
+Rules: a decision applies only to tasks in an attention state (NEEDS_REVIEW, NEEDS_ATTENTION, BLOCKED, WAITING_*). It never changes a `VERIFIED` task. A mission becomes `ACCEPTED` only when every task is VERIFIED, ACCEPTED or SUPERSEDED. `--reason` needs at least 10 characters, `--date` is `YYYY-MM-DD` and defaults to today, `--by` defaults to the current user. Records are validated against the mission manifest; unknown tasks and invalid files are refused. A broken acceptance file is reported as `acceptanceError` and does not hide runner state.
+
 ## Integration and recovery
 
 After user acceptance the coordinator reviews lane diffs, commits, dirty files, ownership and actual check results, merges in the planned order with `--no-ff`, runs project integration checks and repairs regressions using TDD. It records missing GUI/hardware evidence. Push requires an explicit instruction. Never remove dirty or unmerged worktrees.

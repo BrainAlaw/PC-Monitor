@@ -9,6 +9,7 @@ import { git, alive } from './lib/process.mjs';
 import { identifier, validateMission } from './lib/policy.mjs';
 import { missionRows } from './lib/rows.mjs';
 import { renderMissions, createScreen, viewKey } from './lib/view.mjs';
+import { acceptCommand } from './lib/accept-cli.mjs';
 
 const self = fileURLToPath(import.meta.url);
 async function main() {
@@ -75,6 +76,7 @@ async function main() {
     if (!started && (!fs.existsSync(runner.stateFile) || loadJson(runner.stateFile).pid !== child.pid)) throw new Error(`START_FAILED: inspect ${runner.directory}/runner.log`);
     console.log(`Mission ${manifest.id}, runner PID ${child.pid}. Watch: node agents/kit/scripts/runner.mjs watch ${manifest.id}`); return;
   }
-  throw new Error('Usage: runner.mjs doctor [--probe] | start <manifest.json> | status|watch [mission] | pause|resume|stop <mission>');
+  if (['accept', 'supersede'].includes(command)) { console.log(acceptCommand(root, process.argv.slice(2))); return; }
+  throw new Error('Usage: runner.mjs doctor [--probe] | start <manifest.json> | status|watch [mission] | pause|resume|stop <mission> | accept <mission> <task> --decision REVIEWED|ACCEPTED|SUPERSEDED --reason ... [--by] [--date] [--evidence] [--manual] | supersede <mission> --reason ...');
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

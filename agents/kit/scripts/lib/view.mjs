@@ -5,9 +5,10 @@ const STATUS = {
   WAITING_DEPENDENCY: ['…', 'yellow'], WAITING_INTEGRATION: ['⇄', 'yellow'], WAITING_CAPACITY: ['⧗', 'yellow'],
   NEEDS_REVIEW: ['!', 'magenta'], BLOCKED: ['✖', 'red'], CANCELLED: ['–', 'dim'], PAUSED: ['‖', 'yellow'],
   STOPPED: ['■', 'dim'], BUDGET_EXHAUSTED: ['⌛', 'red'], DONE: ['✔', 'green'],
+  ACCEPTED: ['◆', 'cyan'], REVIEWED: ['◇', 'yellow'], SUPERSEDED: ['↷', 'dim'],
 };
 const ATTENTION = new Set(['NEEDS_REVIEW', 'BLOCKED', 'BUDGET_EXHAUSTED']);
-const FINAL = new Set(['VERIFIED', 'NEEDS_REVIEW', 'BLOCKED', 'CANCELLED', 'STOPPED', 'BUDGET_EXHAUSTED', 'DONE']);
+const FINAL = new Set(['VERIFIED', 'ACCEPTED', 'SUPERSEDED', 'NEEDS_REVIEW', 'BLOCKED', 'CANCELLED', 'STOPPED', 'BUDGET_EXHAUSTED', 'DONE']);
 
 export function age(at, now = Date.now()) {
   const time = typeof at === 'string' ? Date.parse(at) : at;
@@ -31,14 +32,14 @@ export function renderMissions(rows, { now = Date.now(), color = false, width = 
   const cols = { task: 22, lane: 12, status: 21, worker: 10, attempt: 4, repairs: 4, progress: 7, active: 7 };
   for (const m of rows) {
     const verified = m.tasks.filter(t => t.status === 'VERIFIED').length;
-    const head = badge(m.status, c);
-    const finished = FINAL.has(m.status);
+    const head = badge(m.effectiveStatus ?? m.status, c);
+    const finished = FINAL.has(m.effectiveStatus ?? m.status);
     const runner = m.runnerAlive ? c('runner alive', 'green') : finished ? c('runner exited', 'dim') : c('runner NOT running', 'red');
     const elapsed = m.startedAt ? `${age(m.startedAt, now)} / ${m.budgetMinutes ?? '?'}m` : '';
     out.push(c(clip(`━━ ${m.mission} `, width), 'bold') + c(head.plain, head.tone) + `  ${runner}` + (elapsed ? `  ${elapsed}` : '') + `  ${bar(verified, m.tasks.length, 10, c)} ${verified}/${m.tasks.length} verified`);
     out.push(c(clip(` ${fit('TASK', cols.task)} ${fit('LANE', cols.lane)} ${fit('STATUS', cols.status)} ${fit('WORKER', cols.worker)} ${fit('TRY', cols.attempt)} ${fit('FIX', cols.repairs)} ${fit('STATE', cols.progress)} ${fit('ACTIVE', cols.active)}`, width), 'dim'));
     for (const t of m.tasks) {
-      const b = badge(t.status, c);
+      const b = badge(t.effectiveStatus ?? t.status, c);
       const active = t.status === 'RUNNING' || t.status === 'VERIFYING' ? age(t.activityAt, now) : '-';
       const line = ` ${fit(t.task, cols.task)} ${fit(t.lane ?? '', cols.lane)} ${fit(b.plain, cols.status)} ${fit(t.worker, cols.worker)} ${fit(t.attempt, cols.attempt)} ${fit(t.repairs, cols.repairs)} ${fit(t.progress, cols.progress)} ${fit(active, cols.active)}`;
       const statusAt = 1 + cols.task + 1 + cols.lane + 1;
