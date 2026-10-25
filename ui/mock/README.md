@@ -30,4 +30,8 @@ The command prints JSON metrics and a compact viewport table. It checks every ro
 
 The measurement tool uses Edge/Chrome --dump-dom with an injected same-origin wrapper and no remote debugging. Its wrapper removes the iframe-only embedded presentation class before measuring the normal dashboard layout. It starts and stops the mock server automatically. Pass --port 5200 if that port is preferred.
 
+To measure the iframe presentation itself, keep the embedded class and run:
+
+    node ui/mock/measure.mjs --embedded --assert
+
 Generated screenshots can be kept outside the repository by setting --out to a temporary directory. No npm dependencies or package manifests are changed.

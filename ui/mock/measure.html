@@ -35,7 +35,7 @@ const reportElement = document.getElementById('layout-report');
 function measure() {
   const doc = frame.contentDocument;
   if (!doc || doc.readyState !== 'complete') return;
-  doc.documentElement.classList.remove('embedded');
+  if (!params.has('embedded')) doc.documentElement.classList.remove('embedded');
   const win = frame.contentWindow;
   const containers = [];
   for (const selector of selectors) {
@@ -110,6 +110,7 @@ function measure() {
   reportElement.textContent = JSON.stringify({
     viewport: { width, height },
     measuredViewportWidth: doc.documentElement.clientWidth,
+    embedded: doc.documentElement.classList.contains('embedded'),
     containers,
     panelRows,
     overflow: { documentWidth, viewportWidth: width, horizontal: documentWidth > width + 1, elements: overflowElements }

@@ -15,6 +15,7 @@ const viewports = [
   { width: 390, height: 844 }
 ];
 const assertMode = process.argv.includes('--assert');
+const embeddedMode = process.argv.includes('--embedded');
 const portIndex = process.argv.indexOf('--port');
 const port = portIndex < 0 ? 5199 : Number(process.argv[portIndex + 1]);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid --port value');
@@ -22,7 +23,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invali
 function runMeasure(browser, url, viewport) {
   const profile = createBrowserProfile();
   try {
-    const target = url + '__measure?width=' + viewport.width + '&height=' + viewport.height;
+    const target = url + '__measure?width=' + viewport.width + '&height=' + viewport.height + (embeddedMode ? '&embedded=1' : '');
     const result = spawnSync(browser, [
       '--headless=new',
       '--disable-gpu',
@@ -75,7 +76,7 @@ function failuresFor(report) {
   report.panelRows.forEach(row => {
     if (row.difference > 2) failures.push(row.panels.map(panel => panel.title).join(' / ') + ' panel heights differ by ' + row.difference + 'px');
   });
-  if (report.viewport.width >= 1800) {
+  if (!report.embedded && report.viewport.width >= 1800) {
     const content = report.containers.find(container => container.selector === '.content');
     if (!content || content.rows.some(row => row.items < 2)) failures.push('wide layout does not place panels in multiple columns');
   }
@@ -93,7 +94,7 @@ try {
 }
 
 const results = reports.map(report => ({ ...report, assertionFailures: failuresFor(report) }));
-console.log(JSON.stringify({ reports: results }, null, 2));
+console.log(JSON.stringify({ embedded: embeddedMode, reports: results }, null, 2));
 console.log('');
 console.log('Viewport | container rows (items/coverage) | panel height max delta | horizontal overflow');
 for (const report of results) {
