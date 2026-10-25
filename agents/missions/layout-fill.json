@@ -1,0 +1,123 @@
+{
+  "version": 2,
+  "id": "layout-fill",
+  "base": "master",
+  "budgetMinutes": 180,
+  "attemptMinutes": 70,
+  "graceMinutes": 10,
+  "tasks": [
+    {
+      "id": "mock-harness",
+      "lane": "ui",
+      "workers": [
+        "codex",
+        "copilot"
+      ],
+      "owned": [
+        "ui/mock",
+        "ui/src",
+        "ui/index.html"
+      ],
+      "prompt": "\nGeneral rules: read AGENTS.md and README.md first. Code, comments, identifiers, commit messages in technical English; match surrounding style. Commit completed stages on your branch. Never read .env or any credential file; never contact the Raspberry Pi (192.168.0.102), the router, or any device from here: deployment is done by the coordinator. Work only inside your owned paths (plus your agents/state file); anything else goes in your report under \"coordinator requests\". Use RED -> GREEN -> REFACTOR: write the failing test first and watch it fail.\n\nRepository: PC-Monitor (read CLAUDE.md and AGENTS.md: binding). The dashboard is TypeScript/Vite in ui/ (vite builds into ../src/PCMonitor/wwwroot which is embedded in the .NET exe; do not edit wwwroot). It is shown in a native window (WebView2), in a browser, and inside the MK-PI Homer dashboard overlay. It has just been re-themed (MK cyberpunk look). PROBLEM reported by the owner: there is a lot of wasted empty space - e.g. on a 1920x1080 screen the \"MAJOR LOADS\" panel's second tile row holds 2 tiles out of 5 and leaves a dead block, \"POWER AND COOLING\" and \"CPU\" panels have half-empty rows, and the page is taller than the screen. Owner decision: FIX THE LAYOUT ONLY (no new data, no new panels, no backend changes): tiles should stretch and fill rows, no partially filled rows with dead space, panels in a row equalize height, and big screens should use the width. Mobile layout (360-430 px) must keep working.\nA realistic sample of the live /api/snapshot payload (92 KB, from the owner's PC) is at C:/Users/Maciej/AppData/Local/Temp/claude/d--Github-Repos-pi-homelab/c48ebc90-825c-48b8-a0f9-39849972572e/scratchpad/pcmon-snapshot.json - read it ONLY to learn the shape and sanitize: the committed fixture must not contain real serial numbers, MAC/IP addresses or user names (replace with generic values; hardware model names may be replaced by generic ones too).\n\nTHIS TASK (tooling so the layout can be verified without hardware): create ui/mock/ with\n 1. snapshot.sample.json - sanitized fixture derived from the real payload (keep its structure and a realistic number of sensors so layouts are representative: CPU with 8 cores, NVIDIA GPU, RAM, 1-2 drives, network adapters, fans).\n 2. server.mjs - dependency-free Node (>=22) static+mock server: serves the built UI from ../src/PCMonitor/wwwroot (after \"npm --prefix ui run build\") and emulates the endpoints the UI uses (/api/snapshot, /api/health, /api/stream as server-sent events with a snapshot immediately and then slowly varying values, /api/settings, /api/diagnostics) by reading ui/src/api.ts, ui/src/types.ts and src/PCMonitor/Server/Api.cs (StreamAsync) for the exact contract; listen on 127.0.0.1 with --port (default 5199).\n 3. shots.mjs - runs headless Edge/Chrome (search \"C:\\\\Program Files (x86)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\", Program Files chrome.exe, env BROWSER) against the mock server using --headless=new --timeout=9000 --screenshot (NOT --virtual-time-budget: the SSE stream never goes idle) at 1920x1080, 2560x1440, 1366x768, 1024x768 and 390x844, writing PNGs into --out <dir>.\n 4. measure.mjs - the layout metric. It loads the page in headless Chrome/Edge with remote debugging off, using --dump-dom and an injected script (inline <script> appended by a tiny wrapper page that loads the dashboard in an iframe from the mock server, same origin) that, for every grid/flex container that holds tiles or cards, computes: row count, items per row, and for each row the fraction of the container width covered by items (incl. gaps). It prints a JSON report and a per-viewport table and, with --assert, exits non-zero if any non-final-by-design row covers less than 97% of the container width OR any panel pair sharing a row differs in height by more than 2 px OR the document has horizontal overflow. Document in the file header which containers it inspects (derive the selectors from ui/src/styles.css and views/*.ts).\n 5. A short ui/mock/README.md. Add NO npm dependencies and do not touch package.json.\nTDD: a vitest file ui/src/mock-fixture.test.ts first: the fixture parses and passes the same model/validation functions the UI uses (ui/src/model.ts, types.ts) and contains no IPv4/MAC/serial-looking strings (regex checks). Then the tools. Run node ui/mock/measure.mjs (without --assert) on the CURRENT layout and report the baseline numbers in your report and state file; do NOT change styles in this task.\nVALIDATION: npm --prefix ui run typecheck, npm --prefix ui test. Screenshots/measurements are real here (browser exists): include them in your report.",
+      "acceptance": [
+        "ui/mock contains a sanitized fixture, a mock server reproducing the API and SSE contract, a screenshot tool and a measure tool with --assert",
+        "mock-fixture.test.ts passes and proves the fixture is valid and sanitized",
+        "Baseline layout measurements for the current layout at five viewports are reported",
+        "Typecheck and vitest pass; no new dependencies"
+      ],
+      "checks": [
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "run",
+            "typecheck"
+          ],
+          "timeoutMs": 300000
+        },
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "test"
+          ],
+          "timeoutMs": 300000
+        }
+      ]
+    },
+    {
+      "id": "fill-layout",
+      "lane": "ui",
+      "workers": [
+        "codex",
+        "copilot"
+      ],
+      "dependsOn": [
+        "mock-harness"
+      ],
+      "owned": [
+        "ui/mock",
+        "ui/src",
+        "ui/index.html"
+      ],
+      "prompt": "\nGeneral rules: read AGENTS.md and README.md first. Code, comments, identifiers, commit messages in technical English; match surrounding style. Commit completed stages on your branch. Never read .env or any credential file; never contact the Raspberry Pi (192.168.0.102), the router, or any device from here: deployment is done by the coordinator. Work only inside your owned paths (plus your agents/state file); anything else goes in your report under \"coordinator requests\". Use RED -> GREEN -> REFACTOR: write the failing test first and watch it fail.\n\nRepository: PC-Monitor (read CLAUDE.md and AGENTS.md: binding). The dashboard is TypeScript/Vite in ui/ (vite builds into ../src/PCMonitor/wwwroot which is embedded in the .NET exe; do not edit wwwroot). It is shown in a native window (WebView2), in a browser, and inside the MK-PI Homer dashboard overlay. It has just been re-themed (MK cyberpunk look). PROBLEM reported by the owner: there is a lot of wasted empty space - e.g. on a 1920x1080 screen the \"MAJOR LOADS\" panel's second tile row holds 2 tiles out of 5 and leaves a dead block, \"POWER AND COOLING\" and \"CPU\" panels have half-empty rows, and the page is taller than the screen. Owner decision: FIX THE LAYOUT ONLY (no new data, no new panels, no backend changes): tiles should stretch and fill rows, no partially filled rows with dead space, panels in a row equalize height, and big screens should use the width. Mobile layout (360-430 px) must keep working.\nA realistic sample of the live /api/snapshot payload (92 KB, from the owner's PC) is at C:/Users/Maciej/AppData/Local/Temp/claude/d--Github-Repos-pi-homelab/c48ebc90-825c-48b8-a0f9-39849972572e/scratchpad/pcmon-snapshot.json - read it ONLY to learn the shape and sanitize: the committed fixture must not contain real serial numbers, MAC/IP addresses or user names (replace with generic values; hardware model names may be replaced by generic ones too).\n\nBuilds on task mock-harness (read its report/state file for the baseline numbers and use ui/mock/*). THIS TASK is the layout fix:\n - Use the baseline measurements to find every container with dead space (MAJOR LOADS, CPU, GPU, POWER AND COOLING, the core grid, network lists, anything else).\n - Fix with CSS (and minimal template changes in ui/src/views/*.ts / components.ts when a grid needs a different structure): tiles in a row stretch to fill the width (CSS grid auto-fit with minmax and 1fr, or flex-grow), no orphan rows with large gaps (use balanced column counts: choose columns per container so that the item count divides nicely at each breakpoint, or let the last row stretch), panels sharing a row equalize height (align-items: stretch, panel bodies flex), and at >= 1800 px width use a multi-column page layout so the whole dashboard fits closer to one screen at 1920x1080 and 2560x1440 without tiny text (keep font sizes readable, minimum 12 px body). Do not remove or reorder information, do not change data logic or the tile contents.\n - Keep: MK theme, embedded mode (html.embedded), mobile layout at 360-430 px with no horizontal scroll, reduced motion, and all existing tests.\n - TDD: tighten ui/mock/measure.mjs expectations first if needed, run it with --assert and watch it fail on the current layout, then fix until it passes at ALL five viewports (1920x1080, 2560x1440, 1366x768, 1024x768, 390x844). Add a vitest that guards structural assumptions you rely on (for example that every tile grid uses the shared class and that the stylesheet defines the breakpoint rules) so a future refactor cannot silently regress.\n - Produce before/after screenshots with shots.mjs into the scratchpad directory given by env SCREENSHOT_DIR (if set) and inspect them yourself; mention concrete findings.\nVALIDATION: npm --prefix ui run typecheck, npm --prefix ui test, node ui/mock/measure.mjs --assert (after npm --prefix ui run build; the build output in wwwroot is ignored by git, never commit it), dotnet test tests/PCMonitor.Tests -c Release (UI is embedded; must stay green).",
+      "acceptance": [
+        "node ui/mock/measure.mjs --assert passes at 1920x1080, 2560x1440, 1366x768, 1024x768 and 390x844 (no under-filled rows, equal panel heights, no horizontal overflow)",
+        "At >=1800 px the dashboard uses a multi-column layout and is visibly more compact; no information removed or reordered",
+        "Embedded mode, mobile layout and the MK theme still work; before/after screenshots are inspected and reported",
+        "Typecheck, vitest and dotnet tests pass"
+      ],
+      "checks": [
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "run",
+            "typecheck"
+          ],
+          "timeoutMs": 300000
+        },
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "test"
+          ],
+          "timeoutMs": 300000
+        },
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "run",
+            "build"
+          ],
+          "timeoutMs": 600000
+        },
+        {
+          "command": "node",
+          "args": [
+            "ui/mock/measure.mjs",
+            "--assert"
+          ],
+          "timeoutMs": 600000
+        },
+        {
+          "command": "dotnet",
+          "args": [
+            "test",
+            "tests/PCMonitor.Tests",
+            "-c",
+            "Release"
+          ],
+          "timeoutMs": 900000
+        }
+      ]
+    }
+  ]
+}
