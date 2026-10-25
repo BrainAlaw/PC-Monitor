@@ -6,6 +6,14 @@ export interface ConnectionIssue {
   level: Level;
 }
 
+export function setEmbeddedMode(root: HTMLElement, currentWindow: { top: unknown; self: unknown }): void {
+  try {
+    root.classList.toggle('embedded', currentWindow.top !== currentWindow.self);
+  } catch {
+    root.classList.add('embedded');
+  }
+}
+
 let health: Health | null = null;
 let connected = true;
 

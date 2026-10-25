@@ -1,7 +1,7 @@
 import './styles.css';
 import { connectStream } from './api';
 import { el } from './dom';
-import { onConnectionChange, showDisconnected, showHealth } from './header';
+import { onConnectionChange, setEmbeddedMode, showDisconnected, showHealth } from './header';
 import { initIssues } from './issues';
 import { History } from './history';
 import { Model, signatureOf } from './model';
@@ -18,6 +18,7 @@ import { renderRaw } from './views/raw';
 import { renderStorage } from './views/storage';
 
 const history = new History();
+setEmbeddedMode(document.documentElement, window);
 let model: Model | null = null;
 let lastSignature = '';
 
