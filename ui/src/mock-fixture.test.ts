@@ -5,34 +5,38 @@ import type { Snapshot } from './types';
 
 const fixtureText = readFileSync(new URL('../mock/snapshot.sample.json', import.meta.url), 'utf8');
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function isSnapshot(value: unknown): value is Snapshot {
-  if (typeof value !== 'object' || value === null) return false;
-  const snapshot = value as Record<string, unknown>;
+  if (!isRecord(value)) return false;
+  const snapshot = value;
   return typeof snapshot.timestamp === 'string' &&
     Array.isArray(snapshot.hardware) &&
-    snapshot.hardware.every(item => typeof item?.name === 'string' && typeof item?.type === 'string') &&
+    snapshot.hardware.every(item => isRecord(item) && typeof item.name === 'string' && typeof item.type === 'string') &&
     Array.isArray(snapshot.sensors) &&
-    snapshot.sensors.every(item =>
-      typeof item?.id === 'string' &&
-      typeof item?.device === 'string' &&
-      Array.isArray(item?.path) &&
+    snapshot.sensors.every(item => isRecord(item) &&
+      typeof item.id === 'string' &&
+      typeof item.device === 'string' &&
+      Array.isArray(item.path) &&
       item.path.every((part: unknown) => typeof part === 'string') &&
-      typeof item?.group === 'string' &&
-      typeof item?.name === 'string' &&
-      typeof item?.type === 'string' &&
-      (typeof item?.value === 'number' || item?.value === null) &&
-      (typeof item?.min === 'number' || item?.min === null) &&
-      (typeof item?.max === 'number' || item?.max === null) &&
-      typeof item?.unit === 'string' &&
-      Number.isInteger(item?.decimals)) &&
+      typeof item.group === 'string' &&
+      typeof item.name === 'string' &&
+      typeof item.type === 'string' &&
+      (typeof item.value === 'number' || item.value === null) &&
+      (typeof item.min === 'number' || item.min === null) &&
+      (typeof item.max === 'number' || item.max === null) &&
+      typeof item.unit === 'string' &&
+      Number.isInteger(item.decimals)) &&
     Array.isArray(snapshot.volumes) &&
-    snapshot.volumes.every(item =>
-      typeof item?.id === 'string' &&
-      typeof item?.label === 'string' &&
-      typeof item?.fileSystem === 'string' &&
-      typeof item?.totalBytes === 'number' &&
-      typeof item?.freeBytes === 'number' &&
-      Array.isArray(item?.disks) &&
+    snapshot.volumes.every(item => isRecord(item) &&
+      typeof item.id === 'string' &&
+      typeof item.label === 'string' &&
+      typeof item.fileSystem === 'string' &&
+      typeof item.totalBytes === 'number' &&
+      typeof item.freeBytes === 'number' &&
+      Array.isArray(item.disks) &&
       item.disks.every((disk: unknown) => typeof disk === 'string'));
 }
 
@@ -69,7 +73,8 @@ describe('mock snapshot fixture', () => {
     const suspicious = strings.filter(value =>
       /\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(value) ||
       /\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b/i.test(value) ||
-      /\b(?:serial(?:\s*(?:number|no|#))?|s\/n)\s*[:#=-]?\s*[a-z0-9-]{4,}\b/i.test(value));
+      /\b(?:serial(?:\s*(?:number|no|#))?|s\/n)\s*[:#=-]?\s*[a-z0-9-]{4,}\b/i.test(value) ||
+      /\b(?=[a-z0-9]{8,}\b)(?=[a-z0-9]*[a-z])(?=[a-z0-9]*\d)[a-z0-9]+\b/i.test(value));
     expect(suspicious).toEqual([]);
   });
 });
