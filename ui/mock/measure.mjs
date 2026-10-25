@@ -63,6 +63,9 @@ function runMeasure(browser, url, viewport) {
 
 function failuresFor(report) {
   const failures = [];
+  if (report.measuredViewportWidth !== report.viewport.width) {
+    failures.push('measurement viewport is ' + report.measuredViewportWidth + 'px, expected ' + report.viewport.width + 'px');
+  }
   for (const container of report.containers) {
     container.rows.forEach((row, index) => {
       if (container.selector === '.core-grid' && index === container.rows.length - 1) return;
@@ -72,6 +75,10 @@ function failuresFor(report) {
   report.panelRows.forEach(row => {
     if (row.difference > 2) failures.push(row.panels.map(panel => panel.title).join(' / ') + ' panel heights differ by ' + row.difference + 'px');
   });
+  if (report.viewport.width >= 1800) {
+    const content = report.containers.find(container => container.selector === '.content');
+    if (!content || content.rows.some(row => row.items < 2)) failures.push('wide layout does not place panels in multiple columns');
+  }
   if (report.overflow.horizontal) failures.push('horizontal overflow: ' + report.overflow.documentWidth + 'px > ' + report.overflow.viewportWidth + 'px');
   return failures;
 }

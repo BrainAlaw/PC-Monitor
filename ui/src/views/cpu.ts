@@ -25,7 +25,7 @@ export function renderCpu(model: Model): void {
   const power = bestCpuPackagePower(model);
   const voltage = model.byContains(['Core', 'SVI2'], 'cpu', 'Voltage');
 
-  setHtml('cpuSummary', h`<div class="signal-grid compact">
+  setHtml('cpuSummary', h`<div class="signal-grid tile-grid compact">
     ${signal(load, 'CPU Total', 'processor utilisation')}
     ${cpuThermalTile(bestCpuTemperature(model))}
     ${numericTile(power, 'CPU Package', power?.deviceName, 'POWER')}

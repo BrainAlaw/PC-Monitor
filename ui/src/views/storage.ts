@@ -50,7 +50,7 @@ function volumeCard(volume: Volume, drives: Map<string, Sensor[]>): Safe {
       <span><b>${formatBytes(volume.totalBytes - volume.freeBytes)}</b> used of <b>${formatBytes(volume.totalBytes)}</b></span>
       <span class="${risk.level === 'ok' ? '' : risk.level === 'critical' ? 'bad-text' : 'warn-text'}"><b>${formatBytes(volume.freeBytes)}</b> free</span>
     </div>
-    <div class="members">${volume.disks.map(name => member(name, drives.get(name)))}</div>
+    <div class="members tile-grid">${volume.disks.map(name => member(name, drives.get(name)))}</div>
   </article>`;
 }
 
@@ -58,7 +58,7 @@ function volumeCard(volume: Volume, drives: Map<string, Sensor[]>): Safe {
 function looseDriveCard(names: string[], drives: Map<string, Sensor[]>): Safe {
   return h`<article class="volume-card" data-key="loose-drives">
     <div class="volume-head"><div class="volume-title">Other drives</div></div>
-    <div class="members">${names.map(name => member(name, drives.get(name)))}</div>
+    <div class="members tile-grid">${names.map(name => member(name, drives.get(name)))}</div>
   </article>`;
 }
 

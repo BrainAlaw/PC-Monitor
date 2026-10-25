@@ -53,7 +53,7 @@ export function renderPower(model: Model): void {
   const estimate = estimatePower(model, assumptions);
   const watts = (value: number): string => `${Math.round(value)} W`;
 
-  setHtml('powerSummary', h`<div class="signal-grid compact">
+  setHtml('powerSummary', h`<div class="signal-grid tile-grid compact">
     ${valueSignal('Wall (est.)', watts(estimate.wall), 'at the socket', Math.min(100, estimate.wall / 7), 'var(--orange)')}
     ${valueSignal('CPU + GPU', watts(estimate.measuredDc), 'measured', Math.min(100, estimate.measuredDc / 5), 'var(--green)')}
     ${valueSignal('Internal DC', watts(estimate.internalDc), 'before PSU losses', Math.min(100, estimate.internalDc / 6), 'var(--blue)')}

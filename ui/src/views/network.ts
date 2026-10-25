@@ -53,7 +53,7 @@ export function renderNetwork(model: Model, history: History): void {
   const active = adapters(model).slice(0, 4);
 
   setHtml('networkSummary', h`
-    <div class="rate-pair">
+    <div class="rate-pair tile-grid">
       <div class="metric-tile">
         <div class="metric-title"><strong>Download</strong><span class="metric-type">PEAK ${formatRate(Math.max(...download, 1))}</span></div>
         <div class="metric-value" style="color:var(--blue)">${formatRate(nowDown)}</div>

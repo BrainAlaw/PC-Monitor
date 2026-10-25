@@ -15,11 +15,12 @@ const params = new URLSearchParams(location.search);
 const width = Number(params.get('width'));
 const height = Number(params.get('height'));
 const frame = document.getElementById('dashboard');
-frame.width = String(width);
-frame.height = String(height);
+frame.style.width = width + 'px';
+frame.style.height = height + 'px';
 frame.src = '/';
 
 const selectors = [
+  '.content',
   '.layout',
   '.signal-grid',
   '.device-grid',
@@ -39,7 +40,9 @@ function measure() {
   const containers = [];
   for (const selector of selectors) {
     for (const container of doc.querySelectorAll(selector)) {
-      const children = [...container.children].filter(child => {
+      if (win.getComputedStyle(container).display === 'contents') continue;
+      const sourceChildren = selector === '.content' ? [...container.querySelectorAll('.panel')] : [...container.children];
+      const children = sourceChildren.filter(child => {
         const rect = child.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0;
       });
@@ -77,8 +80,8 @@ function measure() {
   }
 
   const panelRows = [];
-  for (const layout of doc.querySelectorAll('.layout')) {
-    const panels = [...layout.children].filter(child => child.matches('.panel') && child.getBoundingClientRect().width > 0);
+  for (const content of doc.querySelectorAll('.content')) {
+    const panels = [...content.querySelectorAll('.panel')].filter(panel => panel.getBoundingClientRect().width > 0);
     const rows = [];
     for (const panel of panels) {
       const rect = panel.getBoundingClientRect();
@@ -99,11 +102,17 @@ function measure() {
   }
 
   const documentWidth = Math.max(doc.documentElement.scrollWidth, doc.body.scrollWidth, doc.querySelector('.page')?.scrollWidth ?? 0);
+  const overflowElements = [...doc.querySelectorAll('body *')]
+    .map(element => ({ element, rect: element.getBoundingClientRect() }))
+    .filter(({ element, rect }) => rect.width > 0 && rect.right > width + 1 && win.getComputedStyle(element).position !== 'fixed')
+    .slice(0, 12)
+    .map(({ element, rect }) => ({ selector: element.id ? '#' + element.id : element.className, left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) }));
   reportElement.textContent = JSON.stringify({
     viewport: { width, height },
+    measuredViewportWidth: doc.documentElement.clientWidth,
     containers,
     panelRows,
-    overflow: { documentWidth, viewportWidth: width, horizontal: documentWidth > width + 1 }
+    overflow: { documentWidth, viewportWidth: width, horizontal: documentWidth > width + 1, elements: overflowElements }
   });
 }
 
