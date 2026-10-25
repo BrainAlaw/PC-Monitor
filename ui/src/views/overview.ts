@@ -36,7 +36,7 @@ function renderThermals(model: Model): void {
   const gpuJunction = model.byText('GPU Memory Junction', 'gpu', 'Temperature');
   const drive = hottestDrive(model);
 
-  setHtml('thermalSummary', h`<div class="signal-grid compact">
+  setHtml('thermalSummary', h`<div class="signal-grid tile-grid compact">
     ${cpuThermalTile(cpuTemp)}
     ${thermalTile(gpuTemp, 'GPU Core', gpuTemp?.deviceName)}
     ${thermalTile(gpuHotspot, 'GPU Hot Spot', gpuHotspot?.deviceName)}
@@ -53,7 +53,7 @@ function renderLoads(model: Model): void {
   const vramSub = `${vramUsed?.valueText || '--'} / ${vramTotal?.valueText || '--'}`;
   const gpuPackagePower = byGpu('GPU Package', 'Power');
 
-  setHtml('loadSummary', h`<div class="signal-grid">
+  setHtml('loadSummary', h`<div class="signal-grid tile-grid">
     ${signal(bestCpuLoad(model), 'CPU Total', 'processor load')}
     ${signal(byGpu('GPU Core'), 'GPU Core', 'graphics load')}
     ${signal(byGpu('GPU Memory'), 'GPU Memory', 'vram load')}

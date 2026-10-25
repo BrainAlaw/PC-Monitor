@@ -23,7 +23,7 @@ export function renderGpu(model: Model): void {
   setHtml('gpuCards', h`
     <article class="device-card">
       <div class="device-head"><div class="device-name">Core State</div></div>
-      <div class="signal-grid">
+      <div class="signal-grid tile-grid">
         ${signal(coreLoad, 'Core Load', 'GPU utilisation')}
         ${thermalTile(temperature, 'Core Temp', temperature?.deviceName)}
         ${thermalTile(hotspot, 'Hot Spot', hotspot?.deviceName)}
@@ -31,7 +31,7 @@ export function renderGpu(model: Model): void {
     </article>
     <article class="device-card">
       <div class="device-head"><div class="device-name">Memory State</div></div>
-      <div class="signal-grid">
+      <div class="signal-grid tile-grid">
         ${signal(memoryLoad, 'Memory Load', 'VRAM utilisation')}
         ${signal(controllerLoad, 'Memory Controller', 'controller utilisation')}
         ${signal(vramUsed, 'VRAM Used', vramSub, vramPct)}
@@ -39,7 +39,7 @@ export function renderGpu(model: Model): void {
     </article>
     <article class="device-card">
       <div class="device-head"><div class="device-name">Clocks And Power</div></div>
-      <div class="signal-grid">
+      <div class="signal-grid tile-grid">
         ${numericTile(coreClock, 'Core Clock', coreClock?.deviceName, 'CLOCK')}
         ${numericTile(memoryClock, 'Memory Clock', memoryClock?.deviceName, 'CLOCK')}
         ${numericTile(packagePower, 'Package Power', packagePower?.deviceName, 'POWER')}
