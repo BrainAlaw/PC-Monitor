@@ -6,7 +6,7 @@ export const REQUIREMENTS = {
   claude: ['--dangerously-skip-permissions', '--output-format'],
   copilot: ['--autopilot', '--allow-all', '--no-ask-user'],
   cursor: ['--force', '--trust', '--sandbox', '--approve-mcps'],
-  opencode: ['--auto', '--format'],
+  opencode: ['--standalone', '--auto', '--format'],
 };
 export function agentArguments(tool, prompt, worker = {}) {
   const model = worker.model ? ['--model', worker.model] : [];
@@ -15,7 +15,8 @@ export function agentArguments(tool, prompt, worker = {}) {
     case 'claude': return ['--print', '--dangerously-skip-permissions', '--output-format', 'stream-json', '--verbose', ...model, prompt];
     case 'copilot': return ['--autopilot', '--allow-all', '--no-ask-user', '--max-autopilot-continues', '20', ...model, '-p', prompt];
     case 'cursor': return ['-p', prompt, '--force', '--trust', '--sandbox', 'disabled', '--approve-mcps', '--output-format', 'stream-json', ...model];
-    case 'opencode': return ['run', '--auto', '--format', 'json', ...model, prompt];
+    // --standalone: a private server in cwd; the shared background service keeps the directory it started in.
+    case 'opencode': return ['run', '--standalone', '--auto', '--format', 'json', ...model, prompt];
     default: throw new Error(`UNSUPPORTED_TOOL: ${tool}`);
   }
 }

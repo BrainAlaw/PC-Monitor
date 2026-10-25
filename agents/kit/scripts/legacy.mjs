@@ -6,6 +6,8 @@ import { doctor } from './lib/doctor.mjs';
 import { loadJson } from './lib/engine.mjs';
 import { git, alive } from './lib/process.mjs';
 import { identifier } from './lib/policy.mjs';
+import { missionRows } from './lib/rows.mjs';
+import { renderMissions, renderLegacy, renderManual, createScreen, viewKey } from './lib/view.mjs';
 
 const root = git(process.cwd(), ['rev-parse', '--show-toplevel']);
 function legacyStatus(round, agents) {
@@ -30,7 +32,9 @@ function legacyStatus(round, agents) {
   return rows;
 }
 async function main() {
-  const [command, round, ...agents] = process.argv.slice(2);
+  const json = process.argv.includes('--json');
+  const plain = process.argv.includes('--plain');
+  const [command, round, ...agents] = process.argv.slice(2).filter(a => a !== '--json' && a !== '--plain');
   if (command === 'run') {
     const agent = identifier(agents[0]);
     if (!/^\d+$/.test(round)) throw new Error('INVALID_ROUND');
@@ -64,9 +68,12 @@ async function main() {
     return;
   }
   let prior = '';
+  const screen = createScreen(process.stdout, { plain });
+  const pretty = command === 'watch' && !json;
   const frame = () => {
     const missions = path.join(root, '.worktrees/agent-kit');
-    const modern = command === 'watch' && fs.existsSync(missions) ? fs.readdirSync(missions).filter(id => !round || id === round).filter(id => fs.existsSync(path.join(missions, id, 'state.json'))).map(id => loadJson(path.join(missions, id, 'state.json'))) : [];
+    const ids = command === 'watch' && fs.existsSync(missions) ? fs.readdirSync(missions).filter(id => !round || id === round).filter(id => fs.existsSync(path.join(missions, id, 'state.json'))) : [];
+    const modern = pretty ? ids.flatMap(id => missionRows(root, id)) : ids.map(id => loadJson(path.join(missions, id, 'state.json')));
     const legacyRoot = path.join(root, '.worktrees');
     const rounds = new Map();
     if (round && /^\d+$/.test(round) && agents.length) rounds.set(round, agents);
@@ -77,6 +84,13 @@ async function main() {
     const result = { missions: modern, legacy: Object.fromEntries([...rounds].map(([id, tools]) => [id, legacyStatus(id, tools)])) };
     const manualRoot = path.join(root, '.worktrees/manual');
     result.manual = fs.existsSync(manualRoot) ? fs.readdirSync(manualRoot).filter(n => /^run-r\d+-.*\.txt$/.test(n)).map(name => ({ name, record: fs.readFileSync(path.join(manualRoot, name), 'utf8').trim() })) : [];
+    if (pretty) {
+      const options = { color: screen.tty && !process.env.NO_COLOR, width: screen.width() };
+      const legacyText = renderLegacy(result.legacy, options) + renderManual(result.manual, options);
+      const text = modern.length || !legacyText ? renderMissions(modern, options) + legacyText : legacyText;
+      screen.draw(text, viewKey(modern) + JSON.stringify([result.legacy, result.manual]));
+      return;
+    }
     const text = JSON.stringify(result, null, 2);
     if (text !== prior) { console.log(text); prior = text; }
   };

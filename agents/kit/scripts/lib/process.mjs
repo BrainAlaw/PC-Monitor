@@ -44,7 +44,8 @@ export function terminate(pid) {
 export function execute(command, args, { cwd, env = {}, timeoutMs = 3600000, onData = () => {}, onStart = () => {}, shouldStop = () => false } = {}) {
   const spec = commandSpec(command, args);
   return new Promise(resolve => {
-    const child = spawn(spec.command, spec.args, { cwd, env: { ...process.env, ...env }, shell: false, windowsHide: true, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
+    // PWD follows cwd: CLIs that resolve their project from PWD must not see the coordinator's directory.
+    const child = spawn(spec.command, spec.args, { cwd, env: { ...process.env, ...(cwd ? { PWD: cwd } : {}), ...env }, shell: false, windowsHide: true, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
     let output = ''; let timedOut = false; let cancelled = false;
     const receive = data => { const text = data.toString(); output = (output + text).slice(-262144); onData(text); };
     child.stdout.on('data', receive); child.stderr.on('data', receive);

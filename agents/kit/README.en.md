@@ -73,7 +73,7 @@ The combined read-only watcher also shows historical numeric rounds:
 bash agents/kit/scripts/watch-round.sh
 ```
 
-Watch displays changes without clearing the terminal. Ctrl+C closes monitoring, not the mission. Logs and the final report live under `.worktrees/agent-kit/<mission>/`. Legacy `status.sh <NN> <agent...>` and `run-agent.sh <NN> <agent>` remain available after upgrading configuration.
+Watch is a live tracker: one table per mission with status, runner liveness, elapsed budget, verified count, and per package the lane, status, worker, attempt, repairs, checklist progress and last activity, plus the reason for `NEEDS_REVIEW`/`BLOCKED` and limited pools. It redraws in place every 2 s (also under Git Bash/Cygwin, where the console looks like a pipe); `--plain` appends one view per state change for log files. `--json` restores the raw stream; `status` always prints JSON. Ctrl+C closes monitoring, not the mission. Logs and the final report live under `.worktrees/agent-kit/<mission>/`. Legacy `status.sh <NN> <agent...>` and `run-agent.sh <NN> <agent>` remain available after upgrading configuration.
 
 ```powershell
 node agents/kit/scripts/runner.mjs status

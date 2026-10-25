@@ -7,6 +7,8 @@ import { MissionRunner, loadJson, saveJson } from './lib/engine.mjs';
 import { doctor } from './lib/doctor.mjs';
 import { git, alive } from './lib/process.mjs';
 import { identifier, validateMission } from './lib/policy.mjs';
+import { missionRows } from './lib/rows.mjs';
+import { renderMissions, createScreen, viewKey } from './lib/view.mjs';
 
 const self = fileURLToPath(import.meta.url);
 async function main() {
@@ -19,27 +21,19 @@ async function main() {
     console.log(JSON.stringify(result, null, 2)); process.exitCode = result.ok ? 0 : 1; return;
   }
   if (['status', 'watch'].includes(command)) {
-    if (input) identifier(input);
-    const display = () => {
-      const ids = input ? [input] : fs.existsSync(directory) ? fs.readdirSync(directory).filter(id => fs.existsSync(path.join(directory, id, 'state.json'))) : [];
-      const rows = ids.map(id => {
-        const state = loadJson(path.join(directory, id, 'state.json'));
-        return { mission: id, status: state.status, runnerAlive: Boolean(state.pid && alive(state.pid)), updatedAt: new Date(state.updatedAt).toISOString(), tasks: Object.entries(state.tasks).map(([task, item]) => {
-          const attempt = item.attempts.at(-1); const activityFile = attempt ? path.join(attempt.folder, 'activity.json') : '';
-          const activity = activityFile && fs.existsSync(activityFile) ? loadJson(activityFile) : null;
-          const manifest = loadJson(path.join(directory, id, 'mission.json'));
-          const lane = manifest.tasks.find(t => t.id === task)?.lane;
-          const progressFile = path.join(root, '.worktrees', `${id}-${lane}`, 'agents/state', `CURRENT_STATE_${task}.md`);
-          const progress = fs.existsSync(progressFile) ? fs.readFileSync(progressFile, 'utf8') : '';
-          return { task, status: item.status, worker: attempt?.worker ?? '-', attempt: item.attempts.length, repairs: item.repairs, progress: `${(progress.match(/\[x\]/g) ?? []).length}/${(progress.match(/\[[ x]\]/g) ?? []).length}`, activityAt: activity?.at ? new Date(activity.at).toISOString() : null, tokens: attempt?.tokens ?? activity?.tokens ?? 'unknown', feedback: item.feedback?.slice(0, 500) ?? '' };
-        }), pools: state.pools };
-      });
-      const output = JSON.stringify(rows, null, 2);
-      return output;
-    };
-    let prior = '';
-    const frame = () => { const next = display(); if (next !== prior) { console.log(next); prior = next; } };
-    frame(); if (command === 'watch') setInterval(frame, 2000);
+    const flags = [input, ...rest].filter(a => a?.startsWith('--'));
+    const mission = [input, ...rest].find(a => a && !a.startsWith('--'));
+    if (mission) identifier(mission);
+    // status: JSON for scripts. watch: live tracker (use --json for the raw stream).
+    if (command === 'status' || flags.includes('--json')) {
+      let prior = '';
+      const frame = () => { const next = JSON.stringify(missionRows(root, mission), null, 2); if (next !== prior) { console.log(next); prior = next; } };
+      frame(); if (command === 'watch') setInterval(frame, 2000);
+      return;
+    }
+    const screen = createScreen(process.stdout, { plain: flags.includes('--plain') });
+    const frame = () => { const rows = missionRows(root, mission); screen.draw(renderMissions(rows, { color: screen.tty && !process.env.NO_COLOR, width: screen.width() }), viewKey(rows)); };
+    frame(); setInterval(frame, 2000);
     return;
   }
   if (['pause', 'stop'].includes(command)) {

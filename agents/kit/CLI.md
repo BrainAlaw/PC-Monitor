@@ -57,7 +57,9 @@ node agents/kit/scripts/runner.mjs resume feature
 node agents/kit/scripts/runner.mjs stop feature
 ```
 
-Start detaches the runner and checks its launch. One scheduler per project serializes shared pool/worker allocation; place independent packages in one mission. Watch is read-only, includes final states and does not generate prompts, probes or provider calls. Ctrl+C only closes watch. `status` reports if the runner PID is still alive.
+Start detaches the runner and checks its launch. One scheduler per project serializes shared pool/worker allocation; place independent packages in one mission. Watch is read-only, includes final states and does not generate prompts, probes or provider calls. It renders a live tracker (in-place redraw by default, `--plain` appends one view per state change, `NO_COLOR` honoured); `watch --json` and `status` print the JSON rows from `scripts/lib/rows.mjs`. A package that passed its checks but reports `unverified` items is `NEEDS_REVIEW` with feedback `UNVERIFIED: ...`. Ctrl+C only closes watch. `status` reports if the runner PID is still alive.
+
+OpenCode workers run `opencode run --standalone`: without it the CLI attaches to its shared background service, which keeps the directory it was first started in, and a worker edits that checkout instead of its worktree. Every worker also receives `PWD` equal to its worktree.
 
 Pause stops new assignments, gives checkpoint grace, then preserves unfinished work. Stop terminates active process trees. Resume grants a new budget for the unchanged manifest; use a new id for changed scope. Attempt supervisors survive chat/runner exit and persist their own result. The restarted runner observes them before reassigning a lane.
 

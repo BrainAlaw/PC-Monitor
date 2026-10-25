@@ -80,7 +80,7 @@ Alternatywny watcher, łączący misje i stare rundy:
 bash agents/kit/scripts/watch-round.sh
 ```
 
-Watcher jest tylko do odczytu. Pokazuje pakiety, wykonawców, próby, naprawy, limity i blokady; drukuje zmianę widoku zamiast czyścić terminal. Ctrl+C zamyka watcher, a nie misję. Logi i raport końcowy znajdują się w `.worktrees/agent-kit/<mission>/`. Numeryczne rundy nadal obsługują `status.sh <NN> <agent...>` i `run-agent.sh <NN> <agent>` po aktualizacji konfiguracji.
+Watcher jest tylko do odczytu i działa jak tracker na żywo: dla każdej misji tabela ze statusem, stanem runnera, zużytym budżetem i liczbą zweryfikowanych pakietów, a dla każdego pakietu ścieżka, status, wykonawca, próba, naprawy, postęp checklisty i ostatnia aktywność oraz powód `NEEDS_REVIEW`/`BLOCKED` i limity pul. Odświeża widok w miejscu co 2 s (także w Git Bash/Cygwin, gdzie konsola wygląda jak potok); `--plain` dopisuje widok tylko przy zmianie stanu, do logów. `--json` przywraca surowy strumień; `status` zawsze zwraca JSON. Ctrl+C zamyka watcher, a nie misję. Logi i raport końcowy znajdują się w `.worktrees/agent-kit/<mission>/`. Numeryczne rundy nadal obsługują `status.sh <NN> <agent...>` i `run-agent.sh <NN> <agent>` po aktualizacji konfiguracji.
 
 ```powershell
 node agents/kit/scripts/runner.mjs status

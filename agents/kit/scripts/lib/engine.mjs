@@ -226,7 +226,8 @@ export class MissionRunner {
     // Checks can write files too. Do not silently accept a formatter or generator crossing ownership.
     const unexpected = this.changedFiles(dir).filter(file => !owns(owned, file));
     if (unexpected.length) { item.status = 'NEEDS_REVIEW'; item.feedback = `CHECK_OWNERSHIP_VIOLATION: ${unexpected.join(', ')}`; }
-    else { item.status = report.unverified.length ? 'NEEDS_REVIEW' : 'VERIFIED'; item.feedback = ''; }
+    // Keep the reason visible: the coordinator must know which claims still need a real-machine check.
+    else { item.status = report.unverified.length ? 'NEEDS_REVIEW' : 'VERIFIED'; item.feedback = report.unverified.length ? `UNVERIFIED: ${report.unverified.map(String).join('; ')}` : ''; }
     this.persist();
   }
   async repair(task, feedback) {
