@@ -48,7 +48,10 @@ export function renderMissions(rows, { now = Date.now(), color = false, width = 
     }
     const pools = Object.entries(m.pools ?? {}).filter(([, p]) => p && (p.exhausted || p.until > now));
     for (const [name, p] of pools) out.push(c(clip(`   pool ${name}: ${p.exhausted ? 'exhausted for this mission' : `limited, retry in ${age(now - (p.until - now), now)}`}`, width), 'yellow'));
-    if (m.updatedAt) out.push(c(clip(`   updated ${age(m.updatedAt, now)} ago · logs .worktrees/agent-kit/${m.mission}/`, width), 'dim'));
+    // state.json is rewritten only on status changes, so "updated" looked stale while workers were busy.
+    const last = Math.max(0, ...m.tasks.map(t => Date.parse(t.activityAt) || 0));
+    const pulse = last ? `last activity ${age(last, now)} ago` : 'no worker activity yet';
+    out.push(c(clip(`   ${pulse} · status changed ${age(m.updatedAt, now)} ago · logs .worktrees/agent-kit/${m.mission}/`, width), 'dim'));
     out.push('');
   }
   return out.join('\n');
