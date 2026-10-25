@@ -95,3 +95,8 @@ CI runs UI typecheck, UI tests, and .NET tests on Windows. Release packaging is 
 3. Add or update focused tests and directly related documentation.
 4. Run UI typecheck/tests, xUnit tests, or both according to the affected behavior. For changes to the API or cross-layer behavior, validate both sides.
 5. Review the diff for unintended changes and generated files. Report commands run, results, and any environment-dependent checks not performed.
+
+<!-- agent-kit:start -->
+@AGENTS.md
+@COORDINATOR.md
+<!-- agent-kit:end -->

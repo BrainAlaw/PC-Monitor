@@ -8,3 +8,8 @@ src/PCMonitor/wwwroot/
 *.suo
 .vs/
 Thumbs.db
+
+# agent-kit local runtime and account configuration
+.worktrees/
+.agent-kit-runtime/
+agents/kit/project.json

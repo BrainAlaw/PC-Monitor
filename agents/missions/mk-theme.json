@@ -1,0 +1,64 @@
+{
+  "version": 2,
+  "id": "mk-theme",
+  "base": "master",
+  "budgetMinutes": 150,
+  "attemptMinutes": 60,
+  "graceMinutes": 10,
+  "tasks": [
+    {
+      "id": "mk-dashboard-theme",
+      "lane": "ui",
+      "workers": [
+        "codex",
+        "copilot"
+      ],
+      "owned": [
+        "ui/src/styles.css",
+        "ui/src/fonts",
+        "ui/src/theme.test.ts",
+        "ui/index.html",
+        "ui/src/charts.ts",
+        "ui/src/main.ts",
+        "ui/src/header.ts"
+      ],
+      "prompt": "\nGeneral rules: read AGENTS.md and the repository README/docs first. Code, comments, identifiers and commit messages in technical English; match the surrounding style. Commit completed stages on your branch. Never read .env files or credentials; never contact the Raspberry Pi (192.168.0.102) or any device - deployment is done by the coordinator. Work only inside your owned paths (plus your agents/state file). If something outside them must change, describe it in your report under \"coordinator requests\" instead of editing it.\n\nRepository: PC-Monitor (Windows hardware monitor; TypeScript/Vite dashboard in ui/, embedded into the .NET exe). Read CLAUDE.md and AGENTS.md fully - they are binding (no runtime dependency on remote resources, no Node at runtime, keep tests passing). The dashboard is shown standalone (WebView2/browser at 127.0.0.1:8096) and inside the MK-PI Homer dashboard overlay (iframe via the Pi proxy :8082).\n\nSHARED MK DESIGN SPEC (identical for every UI; the goal is \"looks the same\", not \"looks similar\"):\n- Font: JetBrains Mono everywhere (400 + 700), loaded from LOCAL woff2 files (jb-mono-400.woff2, jb-mono-700.woff2). Never Google Fonts: several targets have CSPs that block it. Fallback stack: \"JetBrains Mono\", ui-monospace, \"Cascadia Mono\", Consolas, monospace.\n- Tokens (exact values, CSS custom properties on :root): --void #0a0506; --panel rgba(18,8,10,.82); --panel-2 rgba(30,12,16,.85); --raised rgba(255,42,61,.1); --red #ff2a3d; --red-dim #7a1420; --magenta #ff2bd6; --cyan #00f0ff; --ok #19f0c4; --warn #ffb020; --crit #ff2a3d; --text #f3d9dc; --muted rgba(243,217,220,.68); --dim rgba(243,217,220,.45); --line rgba(255,42,61,.35) (alias --glass-border); --line-2 rgba(255,42,61,.5); --cut 12px; --cut-sm 8px; --radius 2px; --mono <font stack above>.\n- Page background: radial-gradient(900px 500px at 12% -10%, rgba(255,42,61,.24), transparent 60%), radial-gradient(900px 600px at 100% 0%, rgba(255,43,214,.12), transparent 55%), radial-gradient(700px 500px at 50% 120%, rgba(0,240,255,.08), transparent 60%), var(--void); fixed attachment.\n- CRT overlay: body::after fixed, pointer-events none, repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 1px, transparent 1px 3px) + radial vignette (transparent 55%, rgba(0,0,0,.6) 100%), mix-blend-mode multiply.\n- Panels/cards: background var(--panel), 1px solid var(--line), border-radius 2px, chamfered corners clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut))); inset 0 0 24px rgba(255,42,61,.07) glow. Hover: border var(--red), linear-gradient(135deg, rgba(255,42,61,.2), var(--panel) 55%).\n- Headings: uppercase, letter-spacing .12-.25em, color var(--red), text-shadow 0 0 10px rgba(255,42,61,.55); section labels may carry a \"> \" or \"$ \" prefix in var(--cyan).\n- Buttons: uppercase 700 .8rem, letter-spacing .14em, transparent tinted fill (rgba(255,42,61,.1)) + 1px border + glow text-shadow, chamfer with --cut-sm; primary = red, secondary = cyan (rgba(0,240,255,.08)); hover = solid fill with var(--void) text. Danger = red, success = --ok.\n- Inputs/selects: background rgba(10,5,6,.9), 1px solid var(--line), text var(--text), focus border var(--cyan) + 0 0 0 2px rgba(0,240,255,.25). Tables: header row uppercase cyan small caps-like letter-spacing, rows separated by 1px var(--line), hover rgba(255,42,61,.06).\n- Status colors: ok var(--ok), warn var(--warn), crit/error var(--crit), info var(--cyan). Links var(--cyan), hover #fff with cyan glow. ::selection red bg / void text. Thin scrollbars (thumb var(--red-dim), track transparent).\n- Respect prefers-reduced-motion. Must work at 360px width (no horizontal page scroll).\n- Canonical file: pi-homelab/theme/mk-core.css (served on the Pi at http://<pi>:8080/assets/mk-core.css and copied next to every theme as mk-core.css). Where a target can load it, @import url(\"mk-core.css\") and only add target-specific overrides; where it cannot, inline the same tokens/rules.\n\nGOAL: the dashboard must look exactly like the MK-PI dashboard family.\nDELIVERABLES\n1. Fonts: add ui/src/fonts/jb-mono-400.woff2 and jb-mono-700.woff2 (copy from ../pi-homelab/config/pihole/theme/ if that sibling checkout exists, else download the OFL webfonts from the JetBrains/JetBrainsMono GitHub release once) and reference them with @font-face via relative url() so Vite bundles them into wwwroot (no remote font loading). Update THIRD_PARTY_NOTICES.md? You do not own it - put the OFL notice text in your report under coordinator requests.\n2. ui/src/styles.css: replace the current palette (--page #0e1014, --panel #161920, Segoe UI, 10px radius, ...) with the MK spec: map existing variables onto the tokens (keep variable names used across the code so components keep working: --page -> void, --panel/--panel-2/--panel-3 -> panel shades, --line, --text, --muted, --green -> ok, --yellow -> warn, --red -> crit, --cyan -> cyan, --blue -> cyan or a cyan-shifted tone, --magenta, --orange -> warn-ish), --font and --mono -> JetBrains Mono, radius 2px + chamfered cards, scanlines, uppercase red headings, buttons/inputs/popovers/toasts/settings per spec. Gauges, dials (--dial, --core-load), charts and fan curves must stay readable: keep distinct series colors from the token set.\n3. ui/src/charts.ts and other TS files only if they hard-code colors/fonts (read colors from CSS variables instead). Do not change data logic.\n4. Embedded mode: when inside an iframe add class \"embedded\" to <html> (in main.ts, try/catch) and reduce outer chrome/padding so it fits Homer's overlay; no horizontal scroll at 360px.\nTDD: ui/src/theme.test.ts (vitest) FIRST: styles.css contains the exact token values, @font-face points to local ./fonts/*.woff2, no http(s) font/style URLs; any color helper you add reads CSS variables; embedded-class helper sets the class when window.top !== window.self (simulate). Then implement. Run: npm --prefix ui run typecheck, npm --prefix ui test, dotnet test tests/PCMonitor.Tests -c Release (all must pass). If a headless browser is available, run npm --prefix ui run build and screenshot the built page with mock data only if the project already offers a mock/dev mode; otherwise state visual checks as unverified.",
+      "acceptance": [
+        "Dashboard palette, typography and components follow the MK spec with local bundled JetBrains Mono and no remote resources",
+        "Charts/gauges remain readable using token colors; embedded mode fits 360px",
+        "ui/src/theme.test.ts plus existing typecheck, vitest and dotnet tests pass"
+      ],
+      "checks": [
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "run",
+            "typecheck"
+          ],
+          "timeoutMs": 300000
+        },
+        {
+          "command": "npm",
+          "args": [
+            "--prefix",
+            "ui",
+            "test"
+          ],
+          "timeoutMs": 300000
+        },
+        {
+          "command": "dotnet",
+          "args": [
+            "test",
+            "tests/PCMonitor.Tests",
+            "-c",
+            "Release"
+          ],
+          "timeoutMs": 900000
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "id": "project-map",
+  "base": "main",
+  "budgetMinutes": 120,
+  "attemptMinutes": 60,
+  "graceMinutes": 10,
+  "tasks": [
+    {
+      "id": "architecture-map",
+      "lane": "documentation",
+      "workers": ["codex"],
+      "owned": ["docs/agent-kit-project-map.md"],
+      "prompt": "Inspect the project README, source entrypoints, manifests and CI without reading credentials or dependency trees. Write docs/agent-kit-project-map.md describing the actual architecture, executable check commands, integration boundaries and real-machine checks. Cite repository paths. Clearly label unknown facts. Do not change product behavior.",
+      "acceptance": ["The project map documents the actual architecture and validation boundaries with source paths"],
+      "checks": [
+        { "command": "node", "args": ["-e", "const fs=require('node:fs');const s=fs.readFileSync('docs/agent-kit-project-map.md','utf8');if(s.trim().length<200)process.exit(1)"] }
+      ]
+    }
+  ]
+}
